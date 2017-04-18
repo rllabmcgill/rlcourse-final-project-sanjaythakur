@@ -19,7 +19,7 @@ print(env.observation_space.low)
 env.render()
 for i_episode in range(20):
     observation = env.reset()
-    print('New episode')
+    print(observation)
     for t in range(10000):
     	#print('Step')
         env.render()
