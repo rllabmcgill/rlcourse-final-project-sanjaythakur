@@ -14,7 +14,7 @@ MAX_EPISODE_LENGTH = 200
 
 actor = Actor(action_dof=3)
 
-actor.fit(np.array([env.reset()]), [1.0], 1)
+actor.fit(np.array([env.reset()]), [0.0], 1)
 
 for episode_iterator in range(NUM_EPISODES):
 	episode = []
