@@ -149,12 +149,13 @@ Transition = namedtuple('Transition', ['state', 'action', 'reward', 'next_state'
 EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards"])
 stats = EpisodeStats(
         episode_lengths=np.zeros(NUM_EPISODES),
-        episode_rewards=np.zeros(NUM_EPISODES)) 
+        episode_rewards=np.zeros(NUM_EPISODES)
+        ) 
 
 tf.reset_default_graph()
 global_step = tf.Variable(0, name="global_step", trainable=False)
-actor = Actor(learning_rate=0.0001)
-critic = Critic(learning_rate=0.0001)
+actor = Actor(learning_rate=0.00001)
+critic = Critic(learning_rate=0.00001)
 
 with tf.Session() as sess:
     #sess.run(tf.initialize_all_variables())
