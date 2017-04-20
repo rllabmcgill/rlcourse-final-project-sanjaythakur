@@ -4,7 +4,11 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 
 import gym
+#from gym import wrappers
+
 env = gym.make("Hopper-v1")
+#env = wrappers.Monitor(env, './recordings/hopper', force=True)
+
 action_dof = 3
 
 class Actor():
@@ -141,8 +145,8 @@ class Critic():
 
 ######################################################
 
-NUM_EPISODES = 1000
-MAX_EPISODE_LENGTH = 40
+NUM_EPISODES = 2000
+MAX_EPISODE_LENGTH = 50
 DISCOUNT_FACTOR = 1.0
 
 Transition = namedtuple('Transition', ['state', 'action', 'reward', 'next_state', 'done'])
@@ -154,8 +158,8 @@ stats = EpisodeStats(
 
 tf.reset_default_graph()
 global_step = tf.Variable(0, name="global_step", trainable=False)
-actor = Actor(learning_rate=0.00001, action_dof = 3)
-critic = Critic(learning_rate=0.00001)
+actor = Actor(learning_rate=0.0001, action_dof = 3)
+critic = Critic(learning_rate=0.0001)
 
 with tf.Session() as sess:
     sess.run(tf.initialize_all_variables())
@@ -194,7 +198,7 @@ with tf.Session() as sess:
 
     		state = next_state
 
-    	#print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]))
+    	print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]))
 
 
 smoothened_rewards = []

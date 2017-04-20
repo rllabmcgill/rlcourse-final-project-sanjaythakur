@@ -4,17 +4,17 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 
 import gym
-#from gym import wrappers
+from gym import wrappers
 
-env = gym.make("Swimmer-v1")
-#env = wrappers.Monitor(env, './recordings/swimmer', force=True)
+env = gym.make("Humanoid-v1")
+env = wrappers.Monitor(env, './recordings/humanoid', force=True)
 
-action_dof = 2
+action_dof = 17
 
 class Actor():
 	def __init__(self, learning_rate=0.001, action_dof=2, scope="actor"):
 		with tf.variable_scope(scope):
-			self.state = tf.placeholder(dtype=tf.float32, shape=[1,8], name="state")
+			self.state = tf.placeholder(dtype=tf.float32, shape=[1,376], name="state")
 			self.action = tf.placeholder(dtype=tf.float32, name="action")
 			self.target = tf.placeholder(dtype=tf.float32, name="target")
 
@@ -85,7 +85,7 @@ class Actor():
 class Critic():
     def __init__(self, learning_rate=0.01, scope="critic"):
         with tf.variable_scope(scope):
-            self.state = tf.placeholder(dtype=tf.float32, shape=[1,8], name="state")
+            self.state = tf.placeholder(dtype=tf.float32, shape=[1,376], name="state")
             self.target = tf.placeholder(dtype=tf.float32, name="target")
 
 
@@ -146,7 +146,7 @@ class Critic():
 ######################################################
 
 NUM_EPISODES = 1000
-MAX_EPISODE_LENGTH = 50
+MAX_EPISODE_LENGTH = 2000
 DISCOUNT_FACTOR = 1.0
 
 Transition = namedtuple('Transition', ['state', 'action', 'reward', 'next_state', 'done'])
@@ -158,7 +158,7 @@ stats = EpisodeStats(
 
 tf.reset_default_graph()
 global_step = tf.Variable(0, name="global_step", trainable=False)
-actor = Actor(learning_rate=0.0001)
+actor = Actor(learning_rate=0.0001, action_dof=action_dof)
 critic = Critic(learning_rate=0.0001)
 
 with tf.Session() as sess:
@@ -195,7 +195,7 @@ with tf.Session() as sess:
 
     		state = next_state
 
-    	print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]))
+    	#print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]))
 
 
 smoothened_rewards = []
