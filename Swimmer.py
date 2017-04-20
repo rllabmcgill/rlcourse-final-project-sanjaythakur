@@ -4,7 +4,11 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 
 import gym
+from gym import wrappers
+
 env = gym.make("Swimmer-v1")
+env = wrappers.Monitor(env, './recordings/swimmer', force=True)
+
 action_dof = 2
 
 class Actor():
@@ -142,7 +146,7 @@ class Critic():
 ######################################################
 
 NUM_EPISODES = 1000
-MAX_EPISODE_LENGTH = 500
+MAX_EPISODE_LENGTH = 40
 DISCOUNT_FACTOR = 1.0
 
 Transition = namedtuple('Transition', ['state', 'action', 'reward', 'next_state', 'done'])
@@ -158,15 +162,15 @@ actor = Actor(learning_rate=0.00001)
 critic = Critic(learning_rate=0.00001)
 
 with tf.Session() as sess:
-    #sess.run(tf.initialize_all_variables())
+    sess.run(tf.initialize_all_variables())
 
-    sess.run(tf.global_variables_initializer())
+    #sess.run(tf.global_variables_initializer())
 
     for episode_iterator in range(NUM_EPISODES):
     	episode = []
     	state = env.reset()
     	for episode_step in range(MAX_EPISODE_LENGTH):
-    		#env.render()
+    		env.render()
     		action = actor.predict([state])
     		next_state, reward, done, info = env.step(action)
 
@@ -192,7 +196,7 @@ with tf.Session() as sess:
 
     		state = next_state
 
-    	print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]), end="")
+    	#print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]))
 
 
 smoothened_rewards = []
@@ -204,7 +208,10 @@ for iterator in range(NUM_EPISODES):
 		total_reward_in_a_window = 0.0
 
 
-x_axis = [x for x in range(len(smoothened_rewards))]
+#x_axis = [x for x in range(len(stats.episode_rewards))]
+#plt.plot(x_axis, stats.episode_rewards, 'r')
+
+x_axis = [x*25 for x in range(len(smoothened_rewards))]
 plt.plot(x_axis, smoothened_rewards, 'r')
 plt.grid(True)
 plt.show()
