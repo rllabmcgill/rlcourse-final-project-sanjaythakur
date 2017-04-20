@@ -1,6 +1,7 @@
 import tensorflow as tf  
 import numpy as np 
 from collections import namedtuple
+import matplotlib.pyplot as plt
 
 import gym
 env = gym.make("Swimmer-v1")
@@ -78,17 +79,48 @@ class Actor():
 ######################################################
 
 class Critic():
-    def __init__(self, learning_rate=0.1, scope="critic"):
+    def __init__(self, learning_rate=0.01, scope="critic"):
         with tf.variable_scope(scope):
             self.state = tf.placeholder(dtype=tf.float32, shape=[1,8], name="state")
             self.target = tf.placeholder(dtype=tf.float32, name="target")
 
+
+            self.first_hidden_layer = tf.contrib.layers.fully_connected(
+            	inputs=tf.expand_dims(self.state, 0),
+            	num_outputs=100,
+            	activation_fn=tf.nn.relu,
+            	weights_initializer=tf.contrib.layers.xavier_initializer()
+            	)
+
+            self.second_hidden_layer = tf.contrib.layers.fully_connected(
+            	inputs=tf.expand_dims(self.first_hidden_layer, 0),
+            	num_outputs=50,
+            	activation_fn=tf.nn.relu,
+            	weights_initializer=tf.contrib.layers.xavier_initializer()
+            	)
+
+            self.third_hidden_layer = tf.contrib.layers.fully_connected(
+            	inputs=tf.expand_dims(self.second_hidden_layer, 0),
+            	num_outputs=25,
+            	activation_fn=None,
+            	weights_initializer=tf.contrib.layers.xavier_initializer()
+            	)
+
+            self.output_layer = tf.contrib.layers.fully_connected(
+                inputs=tf.expand_dims(self.third_hidden_layer, 0),
+                num_outputs=1,
+                activation_fn=None,
+                weights_initializer=tf.contrib.layers.xavier_initializer()
+                )
+
+            '''
             # This is just linear classifier
             self.output_layer = tf.contrib.layers.fully_connected(
                 inputs=tf.expand_dims(self.state, 0),
                 num_outputs=1,
                 activation_fn=None,
                 weights_initializer=tf.contrib.layers.xavier_initializer())
+			'''
 
             self.value_estimate = tf.squeeze(self.output_layer)
             self.loss = tf.squared_difference(self.value_estimate, self.target)
@@ -109,8 +141,8 @@ class Critic():
 
 ######################################################
 
-NUM_EPISODES = 50
-MAX_EPISODE_LENGTH = 200
+NUM_EPISODES = 1000
+MAX_EPISODE_LENGTH = 500
 DISCOUNT_FACTOR = 1.0
 
 Transition = namedtuple('Transition', ['state', 'action', 'reward', 'next_state', 'done'])
@@ -121,8 +153,8 @@ stats = EpisodeStats(
 
 tf.reset_default_graph()
 global_step = tf.Variable(0, name="global_step", trainable=False)
-actor = Actor()
-critic = Critic()
+actor = Actor(learning_rate=0.0001)
+critic = Critic(learning_rate=0.0001)
 
 with tf.Session() as sess:
     #sess.run(tf.initialize_all_variables())
@@ -152,8 +184,6 @@ with tf.Session() as sess:
     		stats.episode_rewards[episode_iterator] += reward
     		stats.episode_lengths[episode_iterator] = episode_step
 
-    		print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]), end="")
-
 
     		if done:
     			print("Episode finished after {} timesteps".format(t+1))
@@ -161,6 +191,19 @@ with tf.Session() as sess:
 
     		state = next_state
 
-		
-		#all_episodes.append(episode)
+    	print("\rStep {} @ Episode {}/{} ({})".format(episode_step, episode_iterator, NUM_EPISODES, stats.episode_rewards[episode_iterator]), end="")
 
+
+smoothened_rewards = []
+total_reward_in_a_window = 0.0
+for iterator in range(NUM_EPISODES):
+	total_reward_in_a_window += stats.episode_rewards[iterator]
+	if iterator % 25 == 0:
+		smoothened_rewards.append(total_reward_in_a_window/25)
+		total_reward_in_a_window = 0.0
+
+
+x_axis = [x for x in range(len(smoothened_rewards))]
+plt.plot(x_axis, smoothened_rewards, 'r')
+plt.grid(True)
+plt.show()
