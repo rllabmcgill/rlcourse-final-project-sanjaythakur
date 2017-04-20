@@ -9,9 +9,12 @@ import collections
 import sklearn.pipeline
 import sklearn.preprocessing
 
+import plotting
+
 from sklearn.kernel_approximation import RBFSampler
 
-env = gym.envs.make("MountainCarContinuous-v0")
+#env = gym.envs.make("MountainCarContinuous-v0")
+env = gym.make("Swimmer-v1")
 print(env.observation_space.sample())
 
 # Feature Preprocessing: Normalize to zero mean and unit variance
@@ -185,8 +188,7 @@ def actor_critic(env, estimator_policy, estimator_value, num_episodes, discount_
             estimator_policy.update(state, td_error, action)
             
             # Print out which step we're on, useful for debugging.
-            print("\rStep {} @ Episode {}/{} ({})".format(
-                    t, i_episode + 1, num_episodes, stats.episode_rewards[i_episode - 1]), end="")
+            #print("\rStep {} @ Episode {}/{} ({})".format(t, i_episode + 1, num_episodes, stats.episode_rewards[i_episode - 1]))
 
             if done:
                 break
@@ -206,3 +208,5 @@ with tf.Session() as sess:
     # Note, due to randomness in the policy the number of episodes you need to learn a good
     # TODO: Sometimes the algorithm gets stuck, I'm not sure what exactly is happening there.
     stats = actor_critic(env, policy_estimator, value_estimator, 50, discount_factor=0.95)
+
+plotting.plot_episode_stats(stats, smoothing_window=25)
