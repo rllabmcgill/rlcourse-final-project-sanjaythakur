@@ -33,7 +33,7 @@ class Actor():
 		output_layer = tf.contrib.layers.linear(third_hidden_layer, self.action_dof)
 
 		# Reshape output layer to 1-dim Tensor to return predictions
-		predictions = tf.reshape(output_layer, [-1])
+		predictions = tf.reshape(output_layer, [1, -1])
 		#predictions_dict = {"ages": predictions}
 		#predictions = output_layer
 
